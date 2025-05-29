@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-// import { Pipeline } from './pipeline.entity';
+import { Pipeline } from '../../pipeline/entities/pipeline.entity';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -9,9 +9,17 @@ export class User {
   @Column({ unique: true })
   username: string;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
   @Column()
   password: string;
 
-//   @OneToMany(() => Pipeline, pipeline => pipeline.user)
-//   pipelines: Pipeline[];
+  @ManyToMany(() => Pipeline, pipeline => pipeline.users)
+  @JoinTable({
+    name: 'user_pipelines', // Название промежуточной таблицы
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'pipeline_id', referencedColumnName: 'id' }
+  })
+  pipelines: Pipeline[];
 }

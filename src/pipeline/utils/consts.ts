@@ -1,0 +1,1 @@
+export const STABLE_DIFFUSION_TOKEN = "sk-hycOL8MHwKXT5kJQpuUhBFAWLzElp4UQbToRCig3dWEu9hN4";

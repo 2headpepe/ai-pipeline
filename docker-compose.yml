@@ -6,24 +6,40 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nestjs_jwt_db
+      POSTGRES_DB: ai_pipeline
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./images:/app/images
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d ai_pipeline" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    platform: linux/amd64
     ports:
-      - "3000:3000"
+      - "8080:8080"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      DB_DATABASE: nestjs_jwt_db
+      DB_DATABASE: ai_pipeline
+      NODE_ENV: development
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c " while ! nc -z postgres 5432; do sleep 1; done && [ ! -f /tmp/.migrated ] &&  npm run migration:run &&  touch /tmp/.migrated && npm run start:dev "
 
 volumes:
   postgres_data:

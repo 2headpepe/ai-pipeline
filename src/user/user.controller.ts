@@ -1,50 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
-// import { CreatePipelineDto } from './dto/create-pipeline.dto';
+import { UserId } from 'src/auth/decorators/user-id.decorator';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller('user')
+@ApiTags('Пользователь')
+@Controller('/user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
-  @Post('register')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
-
+  @Get()
   @UseGuards(AuthGuard('jwt'))
-  @Get('profile')
-  getProfile(@Req() req) {
-    return this.userService.findOne(req.user.userId);
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Получить профиль текущего пользователя' })
+  @ApiResponse({
+    status: 200,
+    description: 'Профиль пользователя с пайплайнами',
+    schema: {
+      example: {
+        id: 1,
+        username: 'testuser',
+        email: 'user@example.com',
+        pipelines: [
+          {
+            id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            nodes: [
+              {
+                id: 'node1',
+                type: 'chatgpt',
+                position: { x: 100, y: 200 },
+                data: { val: 10 }
+              }
+            ],
+            edges: [
+              {
+                id: 'edge1',
+                source: 'node1',
+                target: 'node2'
+              }
+            ]
+          }
+        ]
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Не авторизован',
+  })
+  async getProfile(@UserId() userId: number) {
+    return this.userService.findOneWithPipelines(userId);
   }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('pipeline')
-  // createPipeline(@Req() req, @Body() createPipelineDto: CreatePipelineDto) {
-  //   return this.userService.createPipeline(req.user.userId, createPipelineDto);
-  // }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Get('pipelines')
-  // getUserPipelines(@Req() req) {
-  //   return this.userService.getUserPipelines(req.user.userId);
-  // }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Delete('pipeline/:id')
-  // deletePipeline(@Req() req, @Param('id') id: string) {
-  //   return this.userService.deletePipeline(req.user.userId, +id);
-  // }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Patch('pipeline/:id')
-  // updatePipeline(
-  //   @Req() req,
-  //   @Param('id') id: string,
-  //   @Body() updatePipelineDto: CreatePipelineDto,
-  // ) {
-  //   return this.userService.updatePipeline(req.user.userId, +id, updatePipelineDto);
-  // }
 }
