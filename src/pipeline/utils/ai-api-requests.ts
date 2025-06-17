@@ -8,7 +8,7 @@ import * as deepl from 'deepl-node';
 import * as fs from 'fs';
 
 export const generateChatGpt = async (httpService: HttpService, prompt: string) => {
-    const token = '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';
+    const token = '';
     const url = 'https://api.openai.com/v1/responses';
     try {
         const response = await firstValueFrom(
@@ -69,7 +69,7 @@ export const generateStableDiffusion = async (httpService: HttpService, imageDir
 }
 
 // 
-const authKeyDeepl = "d82e8834-d016-460b-83cb-1a13343157ed:fx";
+
 export const getLanguages = async () => {
     const deeplClient = new deepl.DeepLClient(authKeyDeepl);
     try {
